@@ -25,7 +25,7 @@ data_fieldnames = fieldnames(user_data);
  
 %User system info input
 user_sys_info_title = 'Recording System Info';
-user_sys_info_prompt = {'Enter Sampling Rate (in Hz)', '(Optional) Enter Voltage Range (V)):','(Optional) Enter Number of Bits:', '(Optional) Enter gain (amplification):'};
+user_sys_info_prompt = {'Enter Sampling Rate (in Hz)', '(Optional) Enter Voltage Range (V)):','(Optional) Enter Number of Bits in ADC:', '(Optional) Enter gain (amplification):'};
 user_sys_info = inputdlg(user_sys_info_prompt, user_sys_info_title, [1 50]);
 Fs = str2num(user_sys_info{1}); 
 if isempty(user_sys_info{2}) || isempty(user_sys_info{3}) || isempty(user_sys_info{4})
