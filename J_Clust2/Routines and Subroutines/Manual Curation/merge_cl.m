@@ -20,7 +20,7 @@ end
 % merge units
 
 for i = 2:length(cl_to_merge) %start at 2 b/c we already have the first unit pts
-    unit_pts{min(cl_to_merge)} = horzcat(unit_pts{min(cl_to_merge)}, unit_pts{cl_to_merge(i)});
+    unit_pts{min(cl_to_merge)} = [unit_pts{min(cl_to_merge)}, unit_pts{cl_to_merge(i)}];
     unit_pts{cl_to_merge(i)} = [];
 end
 

@@ -24,6 +24,12 @@ end
 
 for i = 1:length(units_to_remove_from)
     unit_removed_from = unit_pts{units_to_remove_from(i)};
+    if ~isrow(unit_removed_from)
+        unit_removed_from = unit_removed_from';
+    end
+    if ~isrow(selected_pts)
+        selected_pts = selected_pts';
+    end
     [found_pts, remove_pts, ~] = intersect(unit_removed_from, selected_pts);
     unit_removed_from(remove_pts) = [];
     unit_pts{units_to_remove_from(i)} = unit_removed_from;

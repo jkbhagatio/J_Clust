@@ -28,7 +28,13 @@ for i = 1:length(units_to_add_to)
         unit_pts{units_to_add_to(i)} = 0;
     end
     added_unit = unit_pts{units_to_add_to(i)};
-    added_unit = [added_unit; selected_pts'];
+    if ~isrow(added_unit)
+        added_unit = added_unit';
+    end
+    if ~isrow(selected_pts)
+        selected_pts = selected_pts';
+    end
+    added_unit = [added_unit, selected_pts];
     added_unit(added_unit == 0) = [];
     unit_pts{units_to_add_to(i)} = added_unit;
 end
