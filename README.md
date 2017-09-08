@@ -4,3 +4,5 @@ A MATLAB-based spike-sorting software package for tetrode recordings of extracel
 ![j_clust2](https://user-images.githubusercontent.com/14895866/30189822-6bc536c6-9404-11e7-8c08-02670035f634.jpg)
 
 Please see the Wiki in this repository for introductory videos on using J_Clust2, FAQs, planned future development and helpful references.
+
+If you have any questions, comments, or concerns, or would like any additional information, please contact me - Jai Bhagat - at jaib1@mit.edu
