@@ -1568,3 +1568,13 @@ function J_Clust_fig_KeyPressFcn(J_Clust_obj, eventdata, handles)
 %	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
 % handles    structure with handles and user data (see GUIDATA)
 % --- Executes on key press with focus on J_Clust_fig or any of its controls.
+
+
+% --- Executes during object deletion, before destroying properties.
+function J_Clust_fig_DeleteFcn(hObject, eventdata, handles)
+% hObject    handle to J_Clust_fig (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+clear global cur_coeff_pcs
+clear global cur_coeff_pcs_c
