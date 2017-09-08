@@ -472,6 +472,12 @@ end
 disp('Clustering...')
 handles.unit_pts = run_fcm(handles.feature_wires, N_c);
 
+for i = 1:length(handles.unit_pts)
+    if ~isrow(handles.unit_pts{i})
+        handles.unit_pts{i} = handles.unit_pts{i}';
+    end
+end
+
 %update rest of GUI
 plot_on_channel_scatter;
 plot_on_time_scatter;
@@ -525,6 +531,12 @@ end
 clear global new_unit_pts
 guidata(J_Clust_obj, handles);
 
+for i = 1:length(handles.unit_pts)
+    if ~isrow(handles.unit_pts{i})
+        handles.unit_pts{i} = handles.unit_pts{i}';
+    end
+end
+
 %update rest of GUI
 plot_on_channel_scatter;
 plot_on_time_scatter;
@@ -552,6 +564,12 @@ global new_unit_pts
 handles.unit_pts = new_unit_pts;
 clear global new_unit_pts
 guidata(J_Clust_obj, handles);
+
+for i = 1:length(handles.unit_pts)
+    if ~isrow(handles.unit_pts{i})
+        handles.unit_pts{i} = handles.unit_pts{i}';
+    end
+end
 
 %update rest of GUI
 plot_on_channel_scatter;
