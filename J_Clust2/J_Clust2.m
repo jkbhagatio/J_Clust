@@ -232,6 +232,11 @@ handles.end_time = handles.epochs(2, epoch_val);
 
 initialize_plotting;
 
+if handles.preload
+    handles.cluster_info = update_info_table(handles.unit_pts, handles.ts(handles.first_spk:handles.last_spk), handles.overlaps, handles.cluster_info);
+else
+    handles.cluster_info = update_info_table(handles.unit_pts, handles.ts, handles.overlaps, handles.cluster_info);
+end
 
 guidata(J_Clust_obj, handles);
 
