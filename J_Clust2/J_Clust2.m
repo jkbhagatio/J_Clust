@@ -749,6 +749,10 @@ if length(find(handles.edit_cl)) > 1
     error('Cannot change colors of multiple clusters at once')
 end
 
+if isempty(find(handles.edit_cl))
+    error('No cluster selected.')
+end
+
 set_cl = find(handles.edit_cl);
 new_color = uisetcolor;
 
