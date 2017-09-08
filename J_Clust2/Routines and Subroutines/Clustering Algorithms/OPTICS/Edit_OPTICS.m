@@ -124,13 +124,18 @@ warning 'on'
 
 guidata(edit_optics_obj, handles);
 
-% --- Executes on button press in delete_all_cl.
-function delete_all_cl_Callback(edit_optics_obj, eventdata, handles)
-% edit_optics_obj    handle to delete_all_cl (see GCBO)
+% --- Executes on button press in delete_cl.
+function delete_cl_Callback(edit_optics_obj, eventdata, handles)
+% edit_optics_obj    handle to delete_cl (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-del_cl = str2num(cell2mat(inputdlg('Enter cluster number you wish to delete in order of creation','Delete a cluster from RD Plot',[1 45])));
+del_cl = inputdlg('Enter cluster number you wish to delete in order of creation','Delete a cluster from RD Plot',[1 45]);
+if ~isempty(del_cl)
+    del_cl = str2num(cell2mat(del_cl));
+else
+    return;
+end
 handles.new_unit_pts{del_cl} = [];
 handles.new_unit_pts = handles.new_unit_pts(~cellfun('isempty', handles.new_unit_pts));
 field = ['unit', num2str(del_cl)];
