@@ -8,3 +8,5 @@ Manual: [J_Clust2_Manual.pdf](https://github.com/jaib1/J_Clust/files/1297605/J_C
 Please see the Wiki in this repository for introductory videos on using J_Clust2, FAQs, planned future development and helpful references.
 
 If you have any questions, comments, or concerns, or would like any additional information, please contact me - Jai Bhagat - at jaib1@mit.edu
+
+This code is distributed and protected under the Fair Source License. For more information, see [here](https://fair.io/)
