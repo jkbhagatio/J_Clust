@@ -111,7 +111,7 @@ else
 end
 
 if residuals_select
-    if handles.preload
+    if data_from_main.preload
         disp('Cannot display cluster residuals without continuous tetrode signal')
     else
         mean_concat_waveform = mean(concat_waveforms,2);
