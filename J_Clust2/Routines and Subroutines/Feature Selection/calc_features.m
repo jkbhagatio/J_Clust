@@ -27,10 +27,17 @@ concat_waveforms = reshape(permute(waveforms,[2,1,3]), [4 * num_samples, num_spk
 
 %% Peak Amps & related features
 peak_indx = floor(1/3 * num_samples - 1) + 1; %pre_peak samples + 1
-peak_amps_vec = max(waveforms_2d(:,1:peak_indx),[],2);
+peak_amps_vec = waveforms_2d(:,peak_indx);
 peak_amps = reshape(peak_amps_vec,4,num_spks);
 
-trough_vec = min(waveforms_2d(:,peak_indx:end),[],2);
+trough_vec = zeros(num_spks*4,1);
+parfor i = 1:num_spks
+    if peak_amps_vec(i) < 0 %if negative peak spike
+        trough_vec(i) = max(waveforms_2d(i,peak_indx:end),[],2);
+    else
+        trough_vec(i) = min(waveforms_2d(i,peak_indx:end),[],2);
+    end
+end
 crest_trough_vec = peak_amps_vec - trough_vec;
 crest_trough = reshape(crest_trough_vec,4,num_spks);
 
