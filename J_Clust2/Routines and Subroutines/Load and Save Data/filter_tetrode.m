@@ -15,7 +15,8 @@ B = fir1(n, Wn); %build filter using Hamming window (default)
 filt_sig = zeros(4, length(raw_sig));
 
 parfor i = 1:4
-    filt_sig(i,:) = filter(B, 1, double(raw_sig(i,:))); % runs filter
+    filt_sig(i,:) = filtfilt(B, 1, double(raw_sig(i,:))); % runs filter
 end
 
 end
+
