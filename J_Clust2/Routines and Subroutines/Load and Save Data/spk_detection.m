@@ -2,7 +2,8 @@ function [waveforms, ts, num_spks, new_spk_mrkr, num_samples, overlaps2, thresho
 
 %Description: This .mfile loads spike waveforms from a filtered tetrode signal. Using a novel approach to spike detection, it is able to capture
 %multiple spike events within one spike window, and both positive peak and negative peak spikes (which can both occur depending on location of 
-%electrode in extracellular space), which most online acquistion systems cannot do.
+%electrode in extracellular space), which most online acquistion systems cannot do. Positive value indicates current flowing away from electrode 
+%(presumably from extracellular space -> intracellular space).
 
 %Input: 'filt_sig' = filtered tetrode signal, 'Fs' = sampling rate, 'uV_conversion' = number for converting arbitraty units to uV value,
 %'threshold' = calculated threshold above which spikes are detected(set as input argument because once threshold has been set, it should not change,
@@ -16,7 +17,12 @@ function [waveforms, ts, num_spks, new_spk_mrkr, num_samples, overlaps2, thresho
 num_samples = ceil(Fs / 1000 * 1.5); %1.5 ms per spike waveform
 filt_sig = filt_sig * uV_conversion;
 
-if abs(min(filt_sig(:))) > max(filt_sig(:)) %converts signal to show spikes as positive voltage values
+%check to see if spikes are oriented in positive voltage direction - if
+%not, orient them in this fashion
+negs = sort(filt_sig(:), 'ascend');
+poss = sort(filt_sig(:), 'descend');
+
+if abs(mean(negs(1:100))) > mean(poss(1:100)) %then convert signal to show spikes as positive voltage values
     filt_sig = -filt_sig;
 end
 
