@@ -46,7 +46,7 @@ if handles.output_features
             if features_vector_out(j)
                 cur_feature = handles.features{j,1};
                 cur_feature_name = handles.features{j,2};
-                unit_feature = cur_feature(handles.unit_pts{i});
+                unit_feature = cur_feature(:,handles.unit_pts{i});
                 field = ['unit', num2str(i)];
                 output_struct.(field).(cur_feature_name) = unit_feature;
             end
