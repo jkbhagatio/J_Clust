@@ -31,13 +31,11 @@ peak_amps_vec = waveforms_2d(:,peak_indx);
 peak_amps = reshape(peak_amps_vec,4,num_spks);
 
 trough_vec = zeros(num_spks*4,1);
-parfor i = 1:num_spks
-    if peak_amps_vec(i) < 0 %if negative peak spike
-        trough_vec(i) = max(waveforms_2d(i,peak_indx:end),[],2);
-    else
-        trough_vec(i) = min(waveforms_2d(i,peak_indx:end),[],2);
-    end
-end
+pos_trough_indxs = find(peak_amps_vec < 0);
+neg_trough_indxs = find(peak_amps_vec > 0);
+trough_vec(pos_trough_indxs) = max(waveforms_2d(pos_trough_indxs,peak_indx:end),[],2);
+trough_vec(neg_trough_indxs) = min(waveforms_2d(neg_trough_indxs,peak_indx:end), [], 2);
+
 crest_trough_vec = peak_amps_vec - trough_vec;
 crest_trough = reshape(crest_trough_vec,4,num_spks);
 
@@ -48,7 +46,7 @@ energy = reshape(energy_vec,4,num_spks);
 
 power = energy ./ 32;
 
-% optional: uncomment to find best channels (i.e. closest i.e. channels sorted by greatest power)
+% optional: uncomment to find best channels (i.e. closest channels, i.e. channels sorted by greatest power)
 % [~, best_chs] = sort(mean(power,2),'descend');
 %% PCA
 warning 'off'
