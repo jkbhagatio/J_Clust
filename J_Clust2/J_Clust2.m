@@ -165,29 +165,31 @@ handles.start_time = str2num(set_time_info{1});
 handles.end_time = str2num(set_time_info{2});
 
 %allow for adjusting the visualization of clustered units when adjusting the time display
-if ~isempty(handles.unit_pts)
-    if handles.preload
-        last_spike_ts = max(handles.ts(handles.first_spk:handles.last_spk));
-        if handles.end_time < last_spike_ts
-            for i = 1:length(handles.unit_pts)
-                cur_unit_pts = handles.unit_pts{i};
-                [~, close_indx] = min(abs(handles.ts(cur_unit_pts) - handles.end_time));
-                cur_unit_pts(close_indx-1:end) = [];
-                handles.unit_pts{i} = cur_unit_pts;
-            end
-        end
-    else
-        last_spike_ts = max(handles.ts);
-        if handles.end_time < last_spike_ts
-            for i = 1:length(handles.unit_pts)
-                cur_unit_pts = handles.unit_pts{i};
-                [~, close_indx] = min(abs(handles.ts(cur_unit_pts) - handles.end_time));
-                cur_unit_pts(close_indx-1:end) = [];
-                handles.unit_pts{i} = cur_unit_pts;
-            end
-        end
-    end
-end
+handles.unit_pts = [];
+
+% if ~isempty(handles.unit_pts)
+%     if handles.preload
+%         last_spike_ts = max(handles.ts(handles.first_spk:handles.last_spk));
+%         if handles.end_time < last_spike_ts
+%             for i = 1:length(handles.unit_pts)
+%                 cur_unit_pts = handles.unit_pts{i};
+%                 [~, close_indx] = min(abs(handles.ts(cur_unit_pts) - handles.end_time));
+%                 cur_unit_pts(close_indx-1:end) = [];
+%                 handles.unit_pts{i} = cur_unit_pts;
+%             end
+%         end
+%     else
+%         last_spike_ts = max(handles.ts);
+%         if handles.end_time < last_spike_ts
+%             for i = 1:length(handles.unit_pts)
+%                 cur_unit_pts = handles.unit_pts{i};
+%                 [~, close_indx] = min(abs(handles.ts(cur_unit_pts) - handles.end_time));
+%                 cur_unit_pts(close_indx-1:end) = [];
+%                 handles.unit_pts{i} = cur_unit_pts;
+%             end
+%         end
+%     end
+% end
 
 initialize_plotting; %calculate spike features and load initial plots on axes
 
@@ -1579,6 +1581,7 @@ function J_Clust_fig_DeleteFcn(hObject, eventdata, handles)
 % hObject    handle to J_Clust_fig (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
+global cur_coeff_pcs
+global cur_coeff_pcs_c
 clear global cur_coeff_pcs
 clear global cur_coeff_pcs_c
