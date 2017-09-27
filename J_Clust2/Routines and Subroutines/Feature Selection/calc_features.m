@@ -49,8 +49,7 @@ power = energy ./ 32;
 % optional: uncomment to find best channels (i.e. closest channels, i.e. channels sorted by greatest power)
 % [~, best_chs] = sort(mean(power,2),'descend');
 %% PCA
-warning 'off'
-%PC scores for entire dataset, channel by channel 
+%PC scores for entire dataset, channel by channel
 
 pc_coeffs = zeros(4, num_samples, num_samples);
 pc_scores = zeros(4, num_spks, num_samples);
@@ -58,15 +57,18 @@ pc_variance = zeros(num_samples, 4);
 pc_var_retained = zeros(num_samples, 4);
 pc_mus = zeros(4, num_samples);
 
-parfor i = 1:4
-    [pc_coeffs(i,:,:), pc_scores(i,:,:), pc_variance(:,i), ~, pc_var_retained(:,i), pc_mus(i,:)] = pca2(squeeze(waveforms(i,:,:))');
+if num_spks < num_samples
+    warning('You have too few spikes to run PCA. The rest of the features will still be calculated.')
+else
+    parfor i = 1:4
+        [pc_coeffs(i,:,:), pc_scores(i,:,:), pc_variance(:,i), ~, pc_var_retained(:,i), pc_mus(i,:)] = pca2(squeeze(waveforms(i,:,:))');
+    end
 end
 
 %PC Scores for concatenated waveforms
 
 [pc_coeffs_c, pc_scores_c, pc_variance_c, ~, pc_var_retained_c, pc_mus_c] = pca2(concat_waveforms');
 
-warning 'on'
 %% Wavelet coeffs (daub8)
 
 % [db4_best_cs, db4_wvlet_cs, db4_wvlets_cs_f, db4_cA, db4_cD] = MyDWT1(waveforms,num_spks,4,2,'db4');
