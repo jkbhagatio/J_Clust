@@ -34,7 +34,7 @@ for i = 1:length(units_to_add_to)
     if ~isrow(selected_pts)
         selected_pts = selected_pts';
     end
-    added_unit = [added_unit, selected_pts];
+    added_unit = unique([added_unit, selected_pts]);
     added_unit(added_unit == 0) = [];
     unit_pts{units_to_add_to(i)} = added_unit;
 end
