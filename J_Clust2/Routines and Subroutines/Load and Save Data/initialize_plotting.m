@@ -27,6 +27,7 @@ if ~handles.preload
     disp('Loading Spike Waveforms...')
     [handles.waveforms, handles.ts, handles.num_spks, handles.new_spk_mrkr, handles.num_samples, handles.overlaps, handles.threshold] = ...
         spk_detection(handles.filt_sig(:,sig_sample_start:sig_sample_end), handles.Fs, handles.uV_conversion, handles.threshold);    
+    handles.ts = handles.ts + handles.start_time;
     disp('Calculating Spike Features...')
     handles.features = calc_features(handles.waveforms, handles.num_spks, handles.num_samples, handles.Fs);
 else
