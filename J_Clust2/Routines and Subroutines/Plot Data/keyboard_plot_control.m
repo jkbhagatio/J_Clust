@@ -6,6 +6,70 @@
 %
 
 switch eventdata.Key
+    case 'd'
+        selected_pts = get_selected_pts();
+        if ~isempty(selected_pts)
+            k = questdlg('Are you sure you want to completely delete these spikes from the dataset?', 'Delete Spikes');
+            if ~isempty(k) && strcmp(k,'Yes')
+                [~, indxs_d] = intersect(handles.overlaps, selected_pts);
+                handles.overlaps(indxs_d) = [];
+                handles.ts(selected_pts) = [];
+                handles.waveforms(:,:,selected_pts) = [];
+                
+                if ~isempty(handles.unit_pts)
+                    for i = 1:length(handles.unit_pts)
+                        cur_unit = handles.unit_pts{i};
+                        [~, indxs_d] = intersect(cur_unit, selected_pts);
+                        cur_unit(indxs_d) = [];
+                        handles.unit_pts{i} = cur_unit;
+                    end
+                    
+                    %can't do it within the same loop because we're removing based on indices
+                    for i = 1:length(handles.unit_pts)
+                        for j = 1:length(selected_pts)
+                            cur_unit = handles.unit_pts{i};
+                            cur_unit(cur_unit > selected_pts(j)) = cur_unit(cur_unit > selected_pts(j)) - 1;
+                            handles.unit_pts{i} = cur_unit;
+                        end
+                    end
+                            
+                end
+                for i = 1:8
+                    if i==6 || i==7 %wavelets and wavelets_c (currently not being calculated)
+                        continue;
+                    end
+                    if i == 4 %PC scores
+                        cur_feat = handles.features{i,1}; 
+                        cur_feat(:, selected_pts, :) = [];
+                        handles.features{i,1} = cur_feat;
+                    elseif i == 5 %Concatenated PC scores
+                        cur_feat = handles.features{i,1};
+                        cur_feat(selected_pts, :) = [];
+                        handles.features{i,1} = cur_feat;
+                    else %direct waveform features
+                        cur_feat = handles.features{i,1};
+                        cur_feat(:, selected_pts) = [];
+                        handles.features{i,1} = cur_feat;
+                    end
+                end
+                
+                plot_on_channel_scatter;
+                plot_on_time_scatter;
+                
+                if handles.preload
+                    handles.cluster_info = update_info_table(handles.unit_pts, handles.ts(handles.first_spk:handles.last_spk), handles.overlaps, handles.cluster_info);
+                else
+                    handles.cluster_info = update_info_table(handles.unit_pts, handles.ts, handles.overlaps, handles.cluster_info);
+                end
+                
+            end   
+        end
+        
+
+
+            
+    
+    
     case 'rightarrow' %channel_wires plus
         if handles.chan_combo_val == 12
             handles.chan_combo_val = 3;
