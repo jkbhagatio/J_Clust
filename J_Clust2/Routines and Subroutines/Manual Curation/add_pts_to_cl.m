@@ -24,8 +24,8 @@ end
 
 %add points to selected unit(s)
 for i = 1:length(units_to_add_to)
-    if units_to_add_to(i) > length(unit_pts)
-        unit_pts{units_to_add_to(i)} = 0;
+    if units_to_add_to(i) > length(unit_pts) %if we're creating a new unit that doesn't exist yet
+        unit_pts{units_to_add_to(i)} = 0; %0 serves as filler value
     end
     added_unit = unit_pts{units_to_add_to(i)};
     if ~isrow(added_unit)
@@ -35,7 +35,7 @@ for i = 1:length(units_to_add_to)
         selected_pts = selected_pts';
     end
     added_unit = unique([added_unit, selected_pts]);
-    added_unit(added_unit == 0) = [];
+    added_unit(added_unit == 0) = []; %remove 0 filler value
     unit_pts{units_to_add_to(i)} = added_unit;
 end
 
