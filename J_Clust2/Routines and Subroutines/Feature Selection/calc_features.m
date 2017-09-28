@@ -67,7 +67,17 @@ end
 
 %PC Scores for concatenated waveforms
 
-[pc_coeffs_c, pc_scores_c, pc_variance_c, ~, pc_var_retained_c, pc_mus_c] = pca2(concat_waveforms');
+pc_coeffs_c = zeros(4*num_samples, 4*num_samples);
+pc_scores_c = zeros(num_spks, 4*num_samples);
+pc_variance_c = zeros(4*num_samples, 1);
+pc_var_retained_c = zeros(4*num_samples, 1);
+pc_mus_c = zeros(1, 4*num_samples);
+
+if num_spks < (num_samples*4) 
+    warning('You have too few spikes to run PCA for concatenated waveforms. The rest of the features will still be calculated.')
+else
+    [pc_coeffs_c, pc_scores_c, pc_variance_c, ~, pc_var_retained_c, pc_mus_c] = pca2(concat_waveforms');
+end
 
 %% Wavelet coeffs (daub8)
 
