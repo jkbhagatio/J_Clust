@@ -163,33 +163,7 @@ end
 
 handles.start_time = str2num(set_time_info{1}); 
 handles.end_time = str2num(set_time_info{2});
-
-%allow for adjusting the visualization of clustered units when adjusting the time display
 handles.unit_pts = [];
-
-% if ~isempty(handles.unit_pts)
-%     if handles.preload
-%         last_spike_ts = max(handles.ts(handles.first_spk:handles.last_spk));
-%         if handles.end_time < last_spike_ts
-%             for i = 1:length(handles.unit_pts)
-%                 cur_unit_pts = handles.unit_pts{i};
-%                 [~, close_indx] = min(abs(handles.ts(cur_unit_pts) - handles.end_time));
-%                 cur_unit_pts(close_indx-1:end) = [];
-%                 handles.unit_pts{i} = cur_unit_pts;
-%             end
-%         end
-%     else
-%         last_spike_ts = max(handles.ts);
-%         if handles.end_time < last_spike_ts
-%             for i = 1:length(handles.unit_pts)
-%                 cur_unit_pts = handles.unit_pts{i};
-%                 [~, close_indx] = min(abs(handles.ts(cur_unit_pts) - handles.end_time));
-%                 cur_unit_pts(close_indx-1:end) = [];
-%                 handles.unit_pts{i} = cur_unit_pts;
-%             end
-%         end
-%     end
-% end
 
 initialize_plotting; %calculate spike features and load initial plots on axes
 
@@ -225,14 +199,34 @@ if epoch_val == -1 || epoch_val == 0 || epoch_val == 11
     return;
 end
 
-[handles.epochs, handles.break_set_epoch] = set_epoch(handles.epochs, handles.start_time, handles.end_time, epoch_val);
+pts_field = ['epoch', num2str(epoch_val), '_unitpts'];
+features_field = ['epoch', num2str(epoch_val), '_features'];
+ts_field = ['epoch', num2str(epoch_val), '_ts'];
+overlaps_field = ['epoch', num2str(epoch_val), '_overlaps'];
+
+[handles.epochs, handles.break_set_epoch, N] = set_epoch(handles.epochs, handles.start_time, handles.end_time, epoch_val, handles.unit_pts, handles.features, handles.ts, handles.overlaps, handles.waveforms);
+
 if handles.break_set_epoch
+    guidata(J_Clust_obj, handles);
     return;
 end
-handles.start_time = handles.epochs(1, epoch_val);
-handles.end_time = handles.epochs(2, epoch_val);
 
-initialize_plotting;
+if ~isempty(N) %just established a new epoch
+    handles.(pts_field) = N{1};
+    handles.(features_field) = N{2};
+    handles.(ts_field) = N{3};
+    handles.(overlaps_field) = N{4};
+end
+
+%assign main GUI vals to epoch vals
+
+handles.unit_pts = handles.(pts_field);
+handles.features = handles.(features_field);
+handles.ts = handles.(ts_field);
+handles.overlaps = handles.(overlaps_field);    
+
+plot_on_channel_scatter;
+plot_on_time_scatter;
 
 if handles.preload
     handles.cluster_info = update_info_table(handles.unit_pts, handles.ts(handles.first_spk:handles.last_spk), handles.overlaps, handles.cluster_info);
