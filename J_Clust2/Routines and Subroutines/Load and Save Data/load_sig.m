@@ -47,6 +47,7 @@ switch load_data_contents{load_data_val}
     case 'Filtered Signal'
         filt_sig = user_data.(data_fieldnames(1));
         var_outs{1} = filt_sig;
+        disp('Filtered Signal loaded.')
     case 'Spike Waveforms'
         waveforms = user_data.(data_fieldnames{1});
         if size(waveforms,1) == 4
@@ -64,4 +65,5 @@ switch load_data_contents{load_data_val}
         overlaps1 = find(diff(ts * 1000) < 1.5); %spks less than 1.5 ms apart,
         overlaps2 = unique([overlaps1; overlaps1 + 1]);  %merge to count both 1st and 2nd spks in an overlap, but remove duplicates
         var_outs{1} = waveforms; var_outs{2} = ts; var_outs{3} = num_spks; var_outs{4} = new_spk_mrkr; var_outs{5} = num_samples; var_outs{6} = overlaps2;
+        disp('Spike Waveforms loaded')
 end
