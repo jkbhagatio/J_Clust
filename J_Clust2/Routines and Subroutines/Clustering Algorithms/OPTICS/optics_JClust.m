@@ -24,8 +24,8 @@ RD = ones(1,m) * 10e9; %set all Reachability Distances very high b/c we'll event
 
 % Calculate Core Distances
 
-CD_all_vec = pdist(feature, 'mahalanobis', inv_cov_x);
-% CD_all_vec = pdist(feature);
+% CD_all_vec = pdist(feature, 'mahalanobis', inv_cov_x);
+CD_all_vec = pdist(feature);
 CD_mtx = squareform(CD_all_vec);
 sort_CD_mtx = sort(CD_mtx);
 CD = sort_CD_mtx(minpts+1,:);
@@ -43,8 +43,8 @@ while ~isempty(seeds)
     order(ord_count) = cur_seed; %concatenate order in terms of closest reachability distance
     
     CDs_remaining_pts = ones(1,length(seeds)) * CD(cur_seed);
-    dist2remaining_pts = pdist2(feature(cur_seed,:), feature(seeds,:), 'mahalanobis', inv_cov_x); 
-%     dist2remaining_pts = pdist2(feature(cur_seed,:), feature(seeds,:));
+%    dist2remaining_pts = pdist2(feature(cur_seed,:), feature(seeds,:), 'mahalanobis', inv_cov_x); 
+    dist2remaining_pts = pdist2(feature(cur_seed,:), feature(seeds,:));
     
     cur_RDs = max(CDs_remaining_pts, dist2remaining_pts); %Reachability distances for 'cur_seed' (max b/w core dist for 'cur_seed', & dist b/w 'cur_seed' and all other pts in 'x' that have not yet been visited) 
     old_RD_indxs = (RD(seeds)) > cur_RDs; %checks which previously set and previously minimum calculated reachability distances are greater than current reachability distances for 'cur_seed'
