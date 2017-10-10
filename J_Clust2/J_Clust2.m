@@ -168,7 +168,7 @@ handles.unit_pts = [];
 initialize_plotting; %calculate spike features and load initial plots on axes
 
 if handles.preload
-    handles.cluster_info = update_info_table(handles.unit_pts, handles.ts(handles.first_spk:handles.last_spk), handles.overlaps, handles.cluster_info);
+    handles.cluster_info = update_info_table(handles.unit_pts, handles.cur_ts, handles.cur_overlaps, handles.cluster_info);
 else
     handles.cluster_info = update_info_table(handles.unit_pts, handles.ts, handles.overlaps, handles.cluster_info);
 end
@@ -229,7 +229,7 @@ plot_on_channel_scatter;
 plot_on_time_scatter;
 
 if handles.preload
-    handles.cluster_info = update_info_table(handles.unit_pts, handles.ts(handles.first_spk:handles.last_spk), handles.overlaps, handles.cluster_info);
+    handles.cluster_info = update_info_table(handles.unit_pts, handles.cur_ts, handles.cur_overlaps, handles.cluster_info);
 else
     handles.cluster_info = update_info_table(handles.unit_pts, handles.ts, handles.overlaps, handles.cluster_info);
 end
@@ -483,7 +483,7 @@ end
 plot_on_channel_scatter;
 plot_on_time_scatter;
 if handles.preload
-    handles.cluster_info = update_info_table(handles.unit_pts, handles.ts(handles.first_spk:handles.last_spk), handles.overlaps, handles.cluster_info);
+    handles.cluster_info = update_info_table(handles.unit_pts, handles.cur_ts, handles.cur_overlaps, handles.cluster_info);
 else
     handles.cluster_info = update_info_table(handles.unit_pts, handles.ts, handles.overlaps, handles.cluster_info);
 end
@@ -542,7 +542,7 @@ end
 plot_on_channel_scatter;
 plot_on_time_scatter;
 if handles.preload
-    handles.cluster_info = update_info_table(handles.unit_pts, handles.ts(handles.first_spk:handles.last_spk), handles.overlaps, handles.cluster_info);
+    handles.cluster_info = update_info_table(handles.unit_pts, handles.cur_ts, handles.cur_overlaps, handles.cluster_info);
 else
     handles.cluster_info = update_info_table(handles.unit_pts, handles.ts, handles.overlaps, handles.cluster_info);
 end
@@ -576,7 +576,7 @@ end
 plot_on_channel_scatter;
 plot_on_time_scatter;
 if handles.preload
-    handles.cluster_info = update_info_table(handles.unit_pts, handles.ts(handles.first_spk:handles.last_spk), handles.overlaps, handles.cluster_info);
+    handles.cluster_info = update_info_table(handles.unit_pts, handles.cur_ts, handles.cur_overlaps, handles.cluster_info);
 else
     handles.cluster_info = update_info_table(handles.unit_pts, handles.ts, handles.overlaps, handles.cluster_info);
 end
@@ -591,7 +591,7 @@ function poly_tool_2d_Callback(J_Clust_obj, eventdata, handles)
 % --- Executes on button press in poly_tool_2d.
 
 if handles.preload
-    handles.polygon_indxs = use_poly_tool(handles.chan_disp1, handles.chan_disp2, handles.feature_wires, handles.feature_time, handles.Channel_Scatter, handles.Time_Scatter, handles.ts(handles.first_spk:handles.last_spk));
+    handles.polygon_indxs = use_poly_tool(handles.chan_disp1, handles.chan_disp2, handles.feature_wires, handles.feature_time, handles.Channel_Scatter, handles.Time_Scatter, handles.cur_ts);
 else
     handles.polygon_indxs = use_poly_tool(handles.chan_disp1, handles.chan_disp2, handles.feature_wires, handles.feature_time, handles.Channel_Scatter, handles.Time_Scatter, handles.ts);
 end
@@ -614,7 +614,7 @@ plot_on_channel_scatter;
 plot_on_time_scatter;
 
 if handles.preload
-    handles.cluster_info = update_info_table(handles.unit_pts, handles.ts(handles.first_spk:handles.last_spk), handles.overlaps, handles.cluster_info);
+    handles.cluster_info = update_info_table(handles.unit_pts, handles.cur_ts, handles.cur_overlaps, handles.cluster_info);
 else
     handles.cluster_info = update_info_table(handles.unit_pts, handles.ts, handles.overlaps, handles.cluster_info);
 end
@@ -637,7 +637,7 @@ plot_on_channel_scatter;
 plot_on_time_scatter;
 
 if handles.preload
-    handles.cluster_info = update_info_table(handles.unit_pts, handles.ts(handles.first_spk:handles.last_spk), handles.overlaps, handles.cluster_info);
+    handles.cluster_info = update_info_table(handles.unit_pts, handles.cur_ts, handles.cur_overlaps, handles.cluster_info);
 else
     handles.cluster_info = update_info_table(handles.unit_pts, handles.ts, handles.overlaps, handles.cluster_info);
 end
@@ -660,7 +660,7 @@ plot_on_channel_scatter;
 plot_on_time_scatter;
 
 if handles.preload
-    handles.cluster_info = update_info_table(handles.unit_pts, handles.ts(handles.first_spk:handles.last_spk), handles.overlaps, handles.cluster_info);
+    handles.cluster_info = update_info_table(handles.unit_pts, handles.cur_ts, handles.cur_overlaps, handles.cluster_info);
 else
     handles.cluster_info = update_info_table(handles.unit_pts, handles.ts, handles.overlaps, handles.cluster_info);
 end
@@ -683,7 +683,7 @@ plot_on_channel_scatter;
 plot_on_time_scatter;
 
 if handles.preload
-    handles.cluster_info = update_info_table(handles.unit_pts, handles.ts(handles.first_spk:handles.last_spk), handles.overlaps, handles.cluster_info);
+    handles.cluster_info = update_info_table(handles.unit_pts, handles.cur_ts, handles.cur_overlaps, handles.cluster_info);
 else
     handles.cluster_info = update_info_table(handles.unit_pts, handles.ts, handles.overlaps, handles.cluster_info);
 end
@@ -702,7 +702,7 @@ val = get(handles.hide_cluster, 'Value');
 [handles.hide_cl_scat_wires] = hide_cl_wires(handles.unit_pts, handles.edit_cl, val, handles.chan_disp1, handles.feature_wires, handles.hide_cl_scat_wires, handles.Channel_Scatter);
 
 if handles.preload
-    [handles.hide_cl_scat_time] = hide_cl_time(handles.unit_pts, handles.edit_cl, val, handles.chan_disp2, handles.feature_time, handles.hide_cl_scat_time, handles.ts(handles.first_spk:handles.last_spk), handles.Time_Scatter);
+    [handles.hide_cl_scat_time] = hide_cl_time(handles.unit_pts, handles.edit_cl, val, handles.chan_disp2, handles.feature_time, handles.hide_cl_scat_time, handles.cur_ts, handles.Time_Scatter);
 else
     [handles.hide_cl_scat_time] = hide_cl_time(handles.unit_pts, handles.edit_cl, val, handles.chan_disp2, handles.feature_time, handles.hide_cl_scat_time, handles.ts, handles.Time_Scatter);
 end
@@ -722,7 +722,7 @@ val = get(handles.hide_spikes, 'Value');
 [handles.hide_spks_scat_wires] = hide_spks_wires(handles.unit_pts, handles.edit_cl, val, handles.chan_disp1, handles.feature_wires, handles.hide_spks_scat_wires, handles.Channel_Scatter);
 
 if handles.preload
-    [handles.hide_spks_scat_time] = hide_spks_time(handles.unit_pts, handles.edit_cl, val, handles.chan_disp2, handles.feature_time, handles.hide_spks_scat_time, handles.ts(handles.first_spk:handles.last_spk), handles.Time_Scatter);
+    [handles.hide_spks_scat_time] = hide_spks_time(handles.unit_pts, handles.edit_cl, val, handles.chan_disp2, handles.feature_time, handles.hide_spks_scat_time, handles.cur_ts, handles.Time_Scatter);
 else
     [handles.hide_spks_scat_time] = hide_spks_time(handles.unit_pts, handles.edit_cl, val, handles.chan_disp2, handles.feature_time, handles.hide_spks_scat_time, handles.ts, handles.Time_Scatter);
 end
