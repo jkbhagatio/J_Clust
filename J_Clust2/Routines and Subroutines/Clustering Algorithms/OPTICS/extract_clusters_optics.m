@@ -21,6 +21,8 @@ function clusters = extract_clusters_optics(RD, order, minpts)
 % [1] J. Sander et al. Automatic Extraction of Clusters from Heirarchical Clustering Representations (2003)
 %
 
+clusters = [];
+
 cl_right = cell(1);
 cl_left = cell(1);
 
