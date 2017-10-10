@@ -13,7 +13,11 @@ switch eventdata.Key
             if ~isempty(k) && strcmp(k,'Yes')
                 [~, indxs_d] = intersect(handles.overlaps, selected_pts);
                 handles.overlaps(indxs_d) = [];
-                handles.ts(selected_pts) = [];
+                if ~handles.preload
+                    handles.ts(selected_pts) = [];
+                else
+                    handles.cur_ts(selected_pts) = [];
+                end
                 handles.waveforms(:,:,selected_pts) = [];
                 
                 if ~isempty(handles.unit_pts)
