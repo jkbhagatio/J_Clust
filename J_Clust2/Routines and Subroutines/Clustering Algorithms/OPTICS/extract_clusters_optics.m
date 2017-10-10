@@ -32,9 +32,13 @@ m = length(RD);
 [g_max, indx] = max(maxima_vals); %global maxima
 g_max_indx = maxima_indxs(indx);
 
+if isempty(g_max)
+    return;
+end
+
 sig_pct = .85; %percentage of maxima which must be > than surrounding areas
 
-if (g_max * sig_pct < mean(ord_RD(1:g_max_indx))) && (g_max * sig_pct < mean(ord_RD(g_max_indx+1:g_max_indx+1+minpts))) %return 0 clusters if global maxima is not significant
+if (g_max * sig_pct < mean(ord_RD(1:g_max_indx))) & (g_max * sig_pct < mean(ord_RD(g_max_indx+1:g_max_indx+1+minpts))) %return 0 clusters if global maxima is not significant
     return;
 end
 
