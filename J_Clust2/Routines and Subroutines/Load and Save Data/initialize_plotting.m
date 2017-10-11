@@ -14,15 +14,13 @@ if ~handles.preload
         sig_sample_end = length(handles.filt_sig);
         warning(['Last recorded sample is at ', num2str(length(handles.filt_sig) / handles.Fs), ' seconds']);
     end
-    handles.ts = handles.ts + handles.start_time;
 else
     handles.first_spk = find(handles.ts > handles.start_time, 1);
     handles.last_spk = find(handles.ts > handles.end_time, 1);
     if isempty(handles.last_spk)
         handles.last_spk = length(handles.ts);
         warning(['Last recorded spike is at ', num2str(handles.ts(end)), ' seconds']);
-    end
-    handles.cur_ts = [handles.first_spk:handles.last_spk];
+    end   
 end
 %% Detect spikes and calculate features
 if ~handles.preload
@@ -31,9 +29,12 @@ if ~handles.preload
         spk_detection(handles.filt_sig(:,sig_sample_start:sig_sample_end), handles.Fs, handles.uV_conversion, handles.threshold);    
     disp('Calculating Spike Features...')
     handles.features = calc_features(handles.waveforms, handles.num_spks, handles.num_samples, handles.Fs);
+    handles.ts = handles.ts + handles.start_time;
 else
     disp('Calculating Spike Features...')
     handles.features = calc_features(handles.waveforms(:,:,handles.cur_ts), length(handles.cur_ts), handles.num_samples, handles.Fs);
+    handles.cur_ts = [handles.first_spk:handles.last_spk];
+    handles.cur_overlaps = handles.overlaps(handles.overlaps < length(handles.cur_ts));
 end
     
 disp('Done')
