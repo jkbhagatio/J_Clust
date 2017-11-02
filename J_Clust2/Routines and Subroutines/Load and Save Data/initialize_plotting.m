@@ -32,8 +32,8 @@ if ~handles.preload
     handles.ts = handles.ts + handles.start_time;
 else
     disp('Calculating Spike Features...')
-    handles.features = calc_features(handles.waveforms(:,:,handles.cur_ts), length(handles.cur_ts), handles.num_samples, handles.Fs);
     handles.cur_ts = [handles.first_spk:handles.last_spk];
+    handles.features = calc_features(handles.waveforms(:,:,handles.cur_ts), length(handles.cur_ts), handles.num_samples, handles.Fs);
     handles.cur_overlaps = handles.overlaps(handles.overlaps < length(handles.cur_ts));
 end
     
