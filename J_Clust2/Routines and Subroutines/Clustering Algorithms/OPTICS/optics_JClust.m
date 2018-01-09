@@ -1,4 +1,4 @@
-function [RD, CD, order]=optics_JClust(feature, minpts)
+function [RD, CD, order] = optics_JClust(feature, minpts)
 % Description:
 %
 % Ordering Points of a data set To Identify the Clustering Structure. To understand algorithm, see References below.
@@ -24,8 +24,17 @@ RD = ones(1,m) * 10e9; %set all Reachability Distances very high b/c we'll event
 
 % Calculate Core Distances
 
-% CD_all_vec = pdist(feature, 'mahalanobis', inv_cov_x);
-CD_all_vec = pdist(feature);
+try
+    CD_all_vec = pdist(feature, 'mahalanobis', cov_x);
+catch ME
+    if strcmp(ME.identifier, 'stats:pdist:SingularCov')
+        cov_flag = 1;
+    end
+end
+
+if cov_flag
+    CD_all_vec = pdist(feature);
+end
 CD_mtx = squareform(CD_all_vec);
 sort_CD_mtx = sort(CD_mtx);
 CD = sort_CD_mtx(minpts+1,:);
@@ -43,8 +52,11 @@ while ~isempty(seeds)
     order(ord_count) = cur_seed; %concatenate order in terms of closest reachability distance
     
     CDs_remaining_pts = ones(1,length(seeds)) * CD(cur_seed);
-%    dist2remaining_pts = pdist2(feature(cur_seed,:), feature(seeds,:), 'mahalanobis', inv_cov_x); 
-    dist2remaining_pts = pdist2(feature(cur_seed,:), feature(seeds,:));
+    if ~cov_flag
+        dist2remaining_pts = pdist2(feature(cur_seed,:), feature(seeds,:), 'mahalanobis', cov_x); 
+    else
+        dist2remaining_pts = pdist2(feature(cur_seed,:), feature(seeds,:));
+    end
     
     cur_RDs = max(CDs_remaining_pts, dist2remaining_pts); %Reachability distances for 'cur_seed' (max b/w core dist for 'cur_seed', & dist b/w 'cur_seed' and all other pts in 'x' that have not yet been visited) 
     old_RD_indxs = (RD(seeds)) > cur_RDs; %checks which previously set and previously minimum calculated reachability distances are greater than current reachability distances for 'cur_seed'
@@ -53,6 +65,6 @@ while ~isempty(seeds)
     ord_count = ord_count + 1;
 end
 
-RD(1) = max(RD(2:m)) + .1*max(RD(2:m));
+RD(1) = max(RD(2:m)) + .1*max(RD(2:m)); %set RD of 1st point to be 10% higher than previous max RD since it is otherwise undefined
 
 end
