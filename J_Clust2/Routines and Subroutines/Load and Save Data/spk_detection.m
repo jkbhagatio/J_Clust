@@ -32,8 +32,8 @@ if abs(mean(negs)) < mean(poss) %then flip polarity of signal
 end
 
 if isempty(threshold)
-    threshold(1) = -3.125 * mean(median(abs(filt_sig / .6745),2)); %negative threshold
-    threshold(2) = 3.125 * mean(median(abs(filt_sig / .6745), 2)); %positive threshold
+    threshold(1) = -5 * mean(median(abs(filt_sig / .6745),2)); %negative threshold
+    threshold(2) = 5 * mean(median(abs(filt_sig / .6745), 2)); %positive threshold
 end
 
 [~, spk_datapoints1] = find((filt_sig)<threshold(1));
