@@ -117,8 +117,8 @@ features{1,1} = peak_amps; features{2,1} = crest_trough; features{3,1} = power;
 features{4,1} = pc_scores; features{5,1} = pc_scores_c;
 %features{6,1} = db_coeffs; features{7,1} = db_coeffs_c;
 features{8,1} = width_ms;
-features{9,1} = pc_coeffs; features{10,1} = pc_var_retained;
-features{11,1} = pc_coeffs_c; features{12,1} = pc_var_retained_c;
+features{9,1} = -pc_coeffs; features{10,1} = pc_var_retained;
+features{11,1} = -pc_coeffs_c; features{12,1} = pc_var_retained_c;
 
 features{1,2} = 'Peak_Amplitudes'; features{2,2} = 'Peak_to_Peak_Amplitudes';
 features{3,2} = 'Power'; features{4,2} = 'PC_Scores';
