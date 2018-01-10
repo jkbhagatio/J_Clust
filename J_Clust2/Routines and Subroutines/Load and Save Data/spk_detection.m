@@ -23,37 +23,35 @@ filt_sig = filt_sig * uV_conversion;
 
 %check to see if signal is oriented with most spikes having negative peaks - if not, flip polarity of signal
 
-negs = sort(filt_sig(:), 'ascend');
-poss = sort(filt_sig(:), 'descend');
+sort_sig = sort(filt_sig(:), 'ascend');
+negs = sort_sig(1:100);
+poss = sort_sig(end-99:end);
 
-if abs(mean(negs(1:100))) < mean(poss(1:100)) %then flip polarity of signal
+if abs(mean(negs)) < mean(poss) %then flip polarity of signal
     filt_sig = -filt_sig;
 end
 
 if isempty(threshold)
-    threshold(1) = -5.5 * mean(median(abs(filt_sig / .6745),2)); %negative threshold
-    threshold(2) = 5.5 * mean(median(abs(filt_sig / .6745), 2)); %positive threshold
+    threshold(1) = -3.125 * mean(median(abs(filt_sig / .6745),2)); %negative threshold
+    threshold(2) = 3.125 * mean(median(abs(filt_sig / .6745), 2)); %positive threshold
 end
 
 [~, spk_datapoints1] = find((filt_sig)<threshold(1));
-[~, spk_datapoints2] = find((filt_sig)>threshold(2));
-spk_datapoints1 = unique(spk_datapoints1);
-spk_datapoints2 = unique(spk_datapoints2);
+new_spk_mrkr1 = spk_datapoints1([1; find(diff(spk_datapoints1) > 1) + 1]);
 
-parfor i=1:length(spk_datapoints2)
-    close_updownspk_vec = sort(abs(spk_datapoints2(i) - spk_datapoints1));
-    if close_updownspk_vec(1) < num_samples %if this positive peak is actually due to the repolarization/hyperpolarized period of a negative peak spike
-        spk_datapoints2(i) = -1; %mark this spike for later removal
-    end
+new_spk_mrkr1_long = zeros(num_samples+1, length(new_spk_mrkr1));
+for i =1:length(new_spk_mrkr1)
+    new_spk_mrkr1_long(:,i) = [new_spk_mrkr1(i):new_spk_mrkr1(i)+num_samples];
 end
+new_spk_mrkr1_long = new_spk_mrkr1_long(:);
 
-spk_datapoints2(spk_datapoints2 == -1) = []; %remove all previously marked "bad" positive peak spikes
+filt_sig2 = filt_sig;
+filt_sig2(:,new_spk_mrkr1_long) = 0;
+[~, spk_datapoints2] = find((filt_sig2) > threshold(2));
+new_spk_mrkr2 = spk_datapoints2([1; find(diff(spk_datapoints2) > 1) + 1]);
 
-spk_datapoints = sort([spk_datapoints1; spk_datapoints2]); %all sample points in dataset with |values| > threshold
-diff_spk_datapoints = diff(spk_datapoints);
-new_spk_mrkr = spk_datapoints([1; find(diff_spk_datapoints > 1) + 1]); %1 to include first value in extra_datapoints, +1 for indexing purposes
+new_spk_mrkr = sort([new_spk_mrkr1; new_spk_mrkr2]);
 num_spks = length(new_spk_mrkr);
-[~, pos_pk_spks] = intersect(new_spk_mrkr, spk_datapoints2);
 
 pre_peak_samples = floor(1/3 * num_samples - 1);
 post_peak_samples = ceil(2/3 * num_samples);
@@ -61,23 +59,18 @@ waveforms = zeros(4, num_samples, num_spks);
 
 parfor i = 1:4
     for j = 2:num_spks-1 %throw out first and last spike detected in set in case full waveform can't be detected
-        if ~isempty(intersect(j, pos_pk_spks)) %we are dealing with a positive peak spike
-            [peak, peakindx] = findpeaks(filt_sig(i, new_spk_mrkr(j):new_spk_mrkr(j)+pre_peak_samples),'NPeaks', 1);
-            if isempty(peakindx) || peak < filt_sig(i, new_spk_mrkr(j)) %this waveform starts off at peak
-                peakindx = 1;
-            end
-        else
-            [peak, peakindx] = findpeaks(-filt_sig(i, new_spk_mrkr(j):new_spk_mrkr(j)+pre_peak_samples),'NPeaks', 1);
-            if isempty(peakindx) || peak > filt_sig(i, new_spk_mrkr(j)) %this waveform starts off at peak
-                peakindx = 1;
-            end
+        deriv = sign(gradient(filt_sig(i, new_spk_mrkr(j):new_spk_mrkr(j)+pre_peak_samples)));
+        peak_indx = find(deriv == -deriv(1), 1);
+        if isempty(peak_indx) || abs(filt_sig(i, new_spk_mrkr(j)+peak_indx)) < abs(filt_sig(i, new_spk_mrkr(j))) %this waveform starts off at peak
+            peak_indx = 1;
         end
-        waveforms(i,:,j) = filt_sig(i, (new_spk_mrkr(j)+ peakindx - pre_peak_samples):new_spk_mrkr(j) + peakindx + post_peak_samples); %aligns to peak        
+        waveforms(i,:,j) = filt_sig(i, (new_spk_mrkr(j)+ peak_indx - pre_peak_samples):new_spk_mrkr(j) + peak_indx + post_peak_samples); %aligns to peak
     end
 end
 
+%throw out first and last spike detected in set in case full waveform can't be detected
 num_spks = num_spks - 2;
-new_spk_mrkr(1) = []; new_spk_mrkr(end) = []; %throw out first and last spike detected in set in case full waveform can't be detected
+new_spk_mrkr(1) = []; new_spk_mrkr(end) = []; 
 waveforms(:,:,1) = []; waveforms(:,:,end) = [];
 
 ts = new_spk_mrkr / Fs; %in seconds
