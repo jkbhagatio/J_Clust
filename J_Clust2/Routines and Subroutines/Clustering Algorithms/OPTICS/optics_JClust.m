@@ -1,4 +1,5 @@
 function [RD, CD, order] = optics_JClust(feature, minpts)
+
 % Description:
 %
 % Ordering Points of a data set To Identify the Clustering Structure. To understand algorithm, see References below.
@@ -18,7 +19,7 @@ function [RD, CD, order] = optics_JClust(feature, minpts)
 %
 
 [m, n] = size(feature);
-inv_cov_x = pinv(cov(feature));
+cov_x = inv(cov(feature));
 CD = zeros(1,m);
 RD = ones(1,m) * 10e9; %set all Reachability Distances very high b/c we'll eventually be taking min distances at each point
 cov_flag = 0;
