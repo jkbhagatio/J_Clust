@@ -1,4 +1,4 @@
-function [waveforms, ts, num_spks, new_spk_mrkr, num_samples, overlaps2, threshold] = spk_detection(filt_sig, Fs, uV_conversion, threshold)
+function [waveforms, ts, num_spks, new_spk_mrkr, num_samples, overlaps2, threshold] = spk_detection(filt_sig, Fs, threshold)
 
 %Description: This .mfile loads spike waveforms from a filtered tetrode signal. Using a novel approach to spike detection, it is able to capture
 %multiple spike events within one spike window, and both positive peak and negative peak spikes (which can both occur depending on location of 
@@ -19,7 +19,6 @@ function [waveforms, ts, num_spks, new_spk_mrkr, num_samples, overlaps2, thresho
 %
 
 num_samples = ceil(Fs / 1000 * 1.5); %1.5 ms per spike waveform
-filt_sig = filt_sig * uV_conversion;
 
 %check to see if signal is oriented with most spikes having negative peaks - if not, flip polarity of signal
 

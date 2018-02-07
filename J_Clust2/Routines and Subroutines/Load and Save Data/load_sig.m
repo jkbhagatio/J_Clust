@@ -42,10 +42,12 @@ switch load_data_contents{load_data_val}
         raw_sig = user_data.(data_fieldnames{1});
         disp('Filtering Signal...')
         filt_sig = filter_tetrode(raw_sig, Fs);
+        filt_sig = filt_sig * uV_conversion;
         var_outs{1} = filt_sig;  
         disp('Done')
     case 'Filtered Signal'
         filt_sig = user_data.(data_fieldnames(1));
+        filt_sig = filt_sig * uV_conversion;
         var_outs{1} = filt_sig;
         disp('Filtered Signal loaded.')
     case 'Spike Waveforms'
