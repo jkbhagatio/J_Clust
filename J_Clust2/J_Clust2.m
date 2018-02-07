@@ -39,10 +39,16 @@ function J_Clust2_OpeningFcn(J_Clust_obj, eventdata, handles, varargin)
 % Choose default command line output for J_Clust2
 handles.output = J_Clust_obj;
 
+screen = get(0, 'screensize');
+Left = screen(3) * .175;
+Bottom = screen(4) * .15;
+Width = screen(3) * .825 - Left;
+Height = screen(4) * .85 - Bottom;
+set(J_Clust_obj,'menubar','figure')
+J_Clust_obj.Position = [Left Bottom Width Height];
 
 % Update handles structure
 guidata(J_Clust_obj, handles);
-set(J_Clust_obj,'menubar','figure')
 
 
 function varargout = J_Clust2_OutputFcn(J_Clust_obj, eventdata, handles)
@@ -68,7 +74,7 @@ load_data_contents = get(J_Clust_obj, 'String');
 load_data_val = get(J_Clust_obj, 'Value');
 
 [handles.Fs, handles.uV_conversion, var_outs]  = load_sig(load_data_contents, load_data_val); %type of data loaded: (raw signal, filtered signal, or spike waveforms & timestamps)
-if length(var_outs) < 2 %raw signal loaded into GUI
+if length(var_outs) < 2 %raw or filtered signal loaded into GUI
     handles.filt_sig = var_outs{1};
     handles.preload = 0;
 else %waveforms preloaded into GUI
@@ -146,6 +152,41 @@ function load_data_CreateFcn(J_Clust_obj, eventdata, handles)
 if ispc && isequal(get(J_Clust_obj,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(J_Clust_obj,'BackgroundColor','white');
 end
+
+
+function change_threshold_Callback(hObject, eventdata, handles)
+% hObject    handle to change_threshold (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+if handles.preload
+    error('Cannot Change Threshold for Pre-detected Spike Waveforms')
+end
+
+title = 'Change Threshold Settings';
+prompt = {'Enter Threshold in |Standard Deviations|:', 'OR Enter Threshold in |uV| Value'};
+defaults = {'5', ''};
+new_thresh = inputdlg(prompt, title, [1 40], defaults);
+
+if isempty(new_thresh)
+    return
+end
+
+if ~isempty(new_thresh{1}) && ~isempty(new_thresh{2}) || new_thresh{2} < 0 || new_thresh{1} < 0
+    error('Inappropriate value for threshold')
+end
+
+if ~isempty(str2double(new_thresh{1}))
+    t_mult = str2double(new_thresh{1}); %threshold multiplier 
+else
+    t_mult = str2double(new_thresh{2}); %threshold multiplier     
+end
+
+handles.threshold(1) = -t_mult * mean(median(abs(filt_sig / .6745),2)); %negative threshold
+handles.threshold(2) = t_mult * mean(median(abs(filt_sig / .6745), 2)); %positive threshold
+
+guidata(J_Clust_obj, handles);
+
 
 function set_time_Callback(J_Clust_obj, eventdata, handles)
 % J_Clust_obj    handle to set_time (see GCBO)
@@ -298,7 +339,7 @@ function feature_wires_Callback(J_Clust_obj, eventdata, handles)
 handles.feat_wires_contents = get(J_Clust_obj, 'String');
 handles.feat_wires_val = get(J_Clust_obj, 'Value');
 
-if handles.feat_wires_val == 1 || handles.feat_wires_val == 2
+if 0 < handles.feat_wires_val < 3
     return;
 end
 
