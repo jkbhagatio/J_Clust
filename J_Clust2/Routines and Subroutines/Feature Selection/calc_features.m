@@ -79,19 +79,18 @@ else
     [pc_coeffs_c, pc_scores_c, pc_variance_c, ~, pc_var_retained_c, pc_mus_c] = pca2(concat_waveforms');
 end
 
-%% Wavelet coeffs (daub8)
+%% Wavelet coeffs 
 
-% [db4_best_cs, db4_wvlet_cs, db4_wvlets_cs_f, db4_cA, db4_cD] = MyDWT1(waveforms,num_spks,4,2,'db4');
-% 
-% %db4 best coeff for entire dataset
-% db4_2_coeffs = vertcat(squeeze(db4_wvlets_cs_f(1,db4_best_cs(1,1),:))', squeeze(db4_wvlets_cs_f(2,db4_best_cs(2,1),:))',...
-%     squeeze(db4_wvlets_cs_f(3,db4_best_cs(3,1),:))', squeeze(db4_wvlets_cs_f(4,db4_best_cs(4,1),:))');
-% 
-% %db4 3 best coeffs for each channel
-% db4_2_ch_coeffs = cell(4,1);
-% for i = 1:4
-%     db4_2_ch_coeffs{i} = squeeze(db4_wvlets_cs_f(i,db4_best_cs(i,:),:));
-% end
+%For entire dataset, channel by channel (haar, daub8)
+
+parfor i = 1:4
+  daub8_wavelets = MyDWT(squeeze(waveforms(i,:,:))');
+  daub8_wavelets_ch(i,:,:) = daub8_wavelets;
+end
+
+% Wavelet coeffs for concatenated waveforms (haar, daub8)
+
+daub8_wavelets_c = MyDWT(concat_waveforms');
 
 %% Width
 
@@ -115,7 +114,7 @@ width_ms = reshape(width_ms_vec,4,num_spks);
 
 features{1,1} = peak_amps; features{2,1} = crest_trough; features{3,1} = power; 
 features{4,1} = pc_scores; features{5,1} = pc_scores_c;
-%features{6,1} = db_coeffs; features{7,1} = db_coeffs_c;
+features{6,1} = daub8_wavelets_ch; features{7,1} = daub8_wavelets_c;
 features{8,1} = width_ms;
 features{9,1} = -pc_coeffs; features{10,1} = pc_var_retained;
 features{11,1} = -pc_coeffs_c; features{12,1} = pc_var_retained_c;
