@@ -5,9 +5,9 @@
 axes(handles.Time_Scatter)
 if handles.preload
     if isempty(handles.unit_pts)
-        handles.feature_time = time_scatter_plot(handles.chan_disp2, handles.feat_disp2, handles.features, handles.ts(handles.first_spk:handles.last_spk));
+        handles.feature_time = time_scatter_plot(handles.chan_disp2, handles.feat_disp2, handles.features, handles.cur_ts);
     else %some units have already been defined
-        handles.feature_time = time_scatter_plot(handles.chan_disp2, handles.feat_disp2, handles.features, handles.ts(handles.first_spk:handles.last_spk), handles.unit_pts, handles.colors);
+        handles.feature_time = time_scatter_plot(handles.chan_disp2, handles.feat_disp2, handles.features, handles.cur_ts, handles.unit_pts, handles.colors);
     end
 else
     if isempty(handles.unit_pts)

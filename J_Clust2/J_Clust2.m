@@ -39,10 +39,16 @@ function J_Clust2_OpeningFcn(J_Clust_obj, eventdata, handles, varargin)
 % Choose default command line output for J_Clust2
 handles.output = J_Clust_obj;
 
+screen = get(0, 'screensize');
+Left = screen(3) * .175;
+Bottom = screen(4) * .15;
+Width = screen(3) * .825 - Left;
+Height = screen(4) * .85 - Bottom;
+set(J_Clust_obj,'menubar','figure')
+J_Clust_obj.Position = [Left Bottom Width Height];
 
 % Update handles structure
 guidata(J_Clust_obj, handles);
-set(J_Clust_obj,'menubar','figure')
 
 
 function varargout = J_Clust2_OutputFcn(J_Clust_obj, eventdata, handles)
@@ -68,7 +74,7 @@ load_data_contents = get(J_Clust_obj, 'String');
 load_data_val = get(J_Clust_obj, 'Value');
 
 [handles.Fs, handles.uV_conversion, var_outs]  = load_sig(load_data_contents, load_data_val); %type of data loaded: (raw signal, filtered signal, or spike waveforms & timestamps)
-if length(var_outs) < 2 %raw signal loaded into GUI
+if length(var_outs) < 2 %raw or filtered signal loaded into GUI
     handles.filt_sig = var_outs{1};
     handles.preload = 0;
 else %waveforms preloaded into GUI
@@ -147,6 +153,41 @@ if ispc && isequal(get(J_Clust_obj,'BackgroundColor'), get(0,'defaultUicontrolBa
     set(J_Clust_obj,'BackgroundColor','white');
 end
 
+
+function change_threshold_Callback(hObject, eventdata, handles)
+% hObject    handle to change_threshold (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+if handles.preload
+    error('Cannot Change Threshold for Pre-detected Spike Waveforms')
+end
+
+title = 'Change Threshold Settings';
+prompt = {'Enter Threshold in |Standard Deviations|:', 'OR Enter Threshold in |uV| Value'};
+defaults = {'5', ''};
+new_thresh = inputdlg(prompt, title, [1 40], defaults);
+
+if isempty(new_thresh)
+    return
+end
+
+if ~isempty(new_thresh{1}) && ~isempty(new_thresh{2}) || new_thresh{2} < 0 || new_thresh{1} < 0
+    error('Inappropriate value for threshold')
+end
+
+if ~isempty(str2double(new_thresh{1}))
+    t_mult = str2double(new_thresh{1}); %threshold multiplier 
+else
+    t_mult = str2double(new_thresh{2}); %threshold multiplier     
+end
+
+handles.threshold(1) = -t_mult * mean(median(abs(filt_sig / .6745),2)); %negative threshold
+handles.threshold(2) = t_mult * mean(median(abs(filt_sig / .6745), 2)); %positive threshold
+
+guidata(J_Clust_obj, handles);
+
+
 function set_time_Callback(J_Clust_obj, eventdata, handles)
 % J_Clust_obj    handle to set_time (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -163,36 +204,12 @@ end
 
 handles.start_time = str2num(set_time_info{1}); 
 handles.end_time = str2num(set_time_info{2});
-
-%allow for adjusting the visualization of clustered units when adjusting the time display
-if ~isempty(handles.unit_pts)
-    if handles.preload
-        last_spike_ts = max(handles.ts(handles.first_spk:handles.last_spk));
-        if handles.end_time < last_spike_ts
-            for i = 1:length(handles.unit_pts)
-                cur_unit_pts = handles.unit_pts{i};
-                [~, close_indx] = min(abs(handles.ts(cur_unit_pts) - handles.end_time));
-                cur_unit_pts(close_indx-1:end) = [];
-                handles.unit_pts{i} = cur_unit_pts;
-            end
-        end
-    else
-        last_spike_ts = max(handles.ts);
-        if handles.end_time < last_spike_ts
-            for i = 1:length(handles.unit_pts)
-                cur_unit_pts = handles.unit_pts{i};
-                [~, close_indx] = min(abs(handles.ts(cur_unit_pts) - handles.end_time));
-                cur_unit_pts(close_indx-1:end) = [];
-                handles.unit_pts{i} = cur_unit_pts;
-            end
-        end
-    end
-end
+handles.unit_pts = [];
 
 initialize_plotting; %calculate spike features and load initial plots on axes
 
 if handles.preload
-    handles.cluster_info = update_info_table(handles.unit_pts, handles.ts(handles.first_spk:handles.last_spk), handles.overlaps, handles.cluster_info);
+    handles.cluster_info = update_info_table(handles.unit_pts, handles.cur_ts, handles.cur_overlaps, handles.cluster_info);
 else
     handles.cluster_info = update_info_table(handles.unit_pts, handles.ts, handles.overlaps, handles.cluster_info);
 end
@@ -223,15 +240,40 @@ if epoch_val == -1 || epoch_val == 0 || epoch_val == 11
     return;
 end
 
-[handles.epochs, handles.break_set_epoch] = set_epoch(handles.epochs, handles.start_time, handles.end_time, epoch_val);
+pts_field = ['epoch', num2str(epoch_val), '_unitpts'];
+features_field = ['epoch', num2str(epoch_val), '_features'];
+ts_field = ['epoch', num2str(epoch_val), '_ts'];
+overlaps_field = ['epoch', num2str(epoch_val), '_overlaps'];
+
+[handles.epochs, handles.break_set_epoch, N] = set_epoch(handles.epochs, handles.start_time, handles.end_time, epoch_val, handles.unit_pts, handles.features, handles.ts, handles.overlaps, handles.waveforms);
+
 if handles.break_set_epoch
+    guidata(J_Clust_obj, handles);
     return;
 end
-handles.start_time = handles.epochs(1, epoch_val);
-handles.end_time = handles.epochs(2, epoch_val);
 
-initialize_plotting;
+if ~isempty(N) %just established a new epoch
+    handles.(pts_field) = N{1};
+    handles.(features_field) = N{2};
+    handles.(ts_field) = N{3};
+    handles.(overlaps_field) = N{4};
+end
 
+%assign main GUI vals to epoch vals
+
+handles.unit_pts = handles.(pts_field);
+handles.features = handles.(features_field);
+handles.ts = handles.(ts_field);
+handles.overlaps = handles.(overlaps_field);    
+
+plot_on_channel_scatter;
+plot_on_time_scatter;
+
+if handles.preload
+    handles.cluster_info = update_info_table(handles.unit_pts, handles.cur_ts, handles.cur_overlaps, handles.cluster_info);
+else
+    handles.cluster_info = update_info_table(handles.unit_pts, handles.ts, handles.overlaps, handles.cluster_info);
+end
 
 guidata(J_Clust_obj, handles);
 
@@ -297,7 +339,7 @@ function feature_wires_Callback(J_Clust_obj, eventdata, handles)
 handles.feat_wires_contents = get(J_Clust_obj, 'String');
 handles.feat_wires_val = get(J_Clust_obj, 'Value');
 
-if handles.feat_wires_val == 1 || handles.feat_wires_val == 2
+if 0 < handles.feat_wires_val < 3
     return;
 end
 
@@ -472,11 +514,17 @@ end
 disp('Clustering...')
 handles.unit_pts = run_fcm(handles.feature_wires, N_c);
 
+for i = 1:length(handles.unit_pts)
+    if ~isrow(handles.unit_pts{i})
+        handles.unit_pts{i} = handles.unit_pts{i}';
+    end
+end
+
 %update rest of GUI
 plot_on_channel_scatter;
 plot_on_time_scatter;
 if handles.preload
-    handles.cluster_info = update_info_table(handles.unit_pts, handles.ts(handles.first_spk:handles.last_spk), handles.overlaps, handles.cluster_info);
+    handles.cluster_info = update_info_table(handles.unit_pts, handles.cur_ts, handles.cur_overlaps, handles.cluster_info);
 else
     handles.cluster_info = update_info_table(handles.unit_pts, handles.ts, handles.overlaps, handles.cluster_info);
 end
@@ -525,11 +573,17 @@ end
 clear global new_unit_pts
 guidata(J_Clust_obj, handles);
 
+for i = 1:length(handles.unit_pts)
+    if ~isrow(handles.unit_pts{i})
+        handles.unit_pts{i} = handles.unit_pts{i}';
+    end
+end
+
 %update rest of GUI
 plot_on_channel_scatter;
 plot_on_time_scatter;
 if handles.preload
-    handles.cluster_info = update_info_table(handles.unit_pts, handles.ts(handles.first_spk:handles.last_spk), handles.overlaps, handles.cluster_info);
+    handles.cluster_info = update_info_table(handles.unit_pts, handles.cur_ts, handles.cur_overlaps, handles.cluster_info);
 else
     handles.cluster_info = update_info_table(handles.unit_pts, handles.ts, handles.overlaps, handles.cluster_info);
 end
@@ -553,11 +607,17 @@ handles.unit_pts = new_unit_pts;
 clear global new_unit_pts
 guidata(J_Clust_obj, handles);
 
+for i = 1:length(handles.unit_pts)
+    if ~isrow(handles.unit_pts{i})
+        handles.unit_pts{i} = handles.unit_pts{i}';
+    end
+end
+
 %update rest of GUI
 plot_on_channel_scatter;
 plot_on_time_scatter;
 if handles.preload
-    handles.cluster_info = update_info_table(handles.unit_pts, handles.ts(handles.first_spk:handles.last_spk), handles.overlaps, handles.cluster_info);
+    handles.cluster_info = update_info_table(handles.unit_pts, handles.cur_ts, handles.cur_overlaps, handles.cluster_info);
 else
     handles.cluster_info = update_info_table(handles.unit_pts, handles.ts, handles.overlaps, handles.cluster_info);
 end
@@ -572,7 +632,7 @@ function poly_tool_2d_Callback(J_Clust_obj, eventdata, handles)
 % --- Executes on button press in poly_tool_2d.
 
 if handles.preload
-    handles.polygon_indxs = use_poly_tool(handles.chan_disp1, handles.chan_disp2, handles.feature_wires, handles.feature_time, handles.Channel_Scatter, handles.Time_Scatter, handles.ts(handles.first_spk:handles.last_spk));
+    handles.polygon_indxs = use_poly_tool(handles.chan_disp1, handles.chan_disp2, handles.feature_wires, handles.feature_time, handles.Channel_Scatter, handles.Time_Scatter, handles.cur_ts);
 else
     handles.polygon_indxs = use_poly_tool(handles.chan_disp1, handles.chan_disp2, handles.feature_wires, handles.feature_time, handles.Channel_Scatter, handles.Time_Scatter, handles.ts);
 end
@@ -595,7 +655,7 @@ plot_on_channel_scatter;
 plot_on_time_scatter;
 
 if handles.preload
-    handles.cluster_info = update_info_table(handles.unit_pts, handles.ts(handles.first_spk:handles.last_spk), handles.overlaps, handles.cluster_info);
+    handles.cluster_info = update_info_table(handles.unit_pts, handles.cur_ts, handles.cur_overlaps, handles.cluster_info);
 else
     handles.cluster_info = update_info_table(handles.unit_pts, handles.ts, handles.overlaps, handles.cluster_info);
 end
@@ -618,7 +678,7 @@ plot_on_channel_scatter;
 plot_on_time_scatter;
 
 if handles.preload
-    handles.cluster_info = update_info_table(handles.unit_pts, handles.ts(handles.first_spk:handles.last_spk), handles.overlaps, handles.cluster_info);
+    handles.cluster_info = update_info_table(handles.unit_pts, handles.cur_ts, handles.cur_overlaps, handles.cluster_info);
 else
     handles.cluster_info = update_info_table(handles.unit_pts, handles.ts, handles.overlaps, handles.cluster_info);
 end
@@ -641,7 +701,7 @@ plot_on_channel_scatter;
 plot_on_time_scatter;
 
 if handles.preload
-    handles.cluster_info = update_info_table(handles.unit_pts, handles.ts(handles.first_spk:handles.last_spk), handles.overlaps, handles.cluster_info);
+    handles.cluster_info = update_info_table(handles.unit_pts, handles.cur_ts, handles.cur_overlaps, handles.cluster_info);
 else
     handles.cluster_info = update_info_table(handles.unit_pts, handles.ts, handles.overlaps, handles.cluster_info);
 end
@@ -664,7 +724,7 @@ plot_on_channel_scatter;
 plot_on_time_scatter;
 
 if handles.preload
-    handles.cluster_info = update_info_table(handles.unit_pts, handles.ts(handles.first_spk:handles.last_spk), handles.overlaps, handles.cluster_info);
+    handles.cluster_info = update_info_table(handles.unit_pts, handles.cur_ts, handles.cur_overlaps, handles.cluster_info);
 else
     handles.cluster_info = update_info_table(handles.unit_pts, handles.ts, handles.overlaps, handles.cluster_info);
 end
@@ -683,7 +743,7 @@ val = get(handles.hide_cluster, 'Value');
 [handles.hide_cl_scat_wires] = hide_cl_wires(handles.unit_pts, handles.edit_cl, val, handles.chan_disp1, handles.feature_wires, handles.hide_cl_scat_wires, handles.Channel_Scatter);
 
 if handles.preload
-    [handles.hide_cl_scat_time] = hide_cl_time(handles.unit_pts, handles.edit_cl, val, handles.chan_disp2, handles.feature_time, handles.hide_cl_scat_time, handles.ts(handles.first_spk:handles.last_spk), handles.Time_Scatter);
+    [handles.hide_cl_scat_time] = hide_cl_time(handles.unit_pts, handles.edit_cl, val, handles.chan_disp2, handles.feature_time, handles.hide_cl_scat_time, handles.cur_ts, handles.Time_Scatter);
 else
     [handles.hide_cl_scat_time] = hide_cl_time(handles.unit_pts, handles.edit_cl, val, handles.chan_disp2, handles.feature_time, handles.hide_cl_scat_time, handles.ts, handles.Time_Scatter);
 end
@@ -703,7 +763,7 @@ val = get(handles.hide_spikes, 'Value');
 [handles.hide_spks_scat_wires] = hide_spks_wires(handles.unit_pts, handles.edit_cl, val, handles.chan_disp1, handles.feature_wires, handles.hide_spks_scat_wires, handles.Channel_Scatter);
 
 if handles.preload
-    [handles.hide_spks_scat_time] = hide_spks_time(handles.unit_pts, handles.edit_cl, val, handles.chan_disp2, handles.feature_time, handles.hide_spks_scat_time, handles.ts(handles.first_spk:handles.last_spk), handles.Time_Scatter);
+    [handles.hide_spks_scat_time] = hide_spks_time(handles.unit_pts, handles.edit_cl, val, handles.chan_disp2, handles.feature_time, handles.hide_spks_scat_time, handles.cur_ts, handles.Time_Scatter);
 else
     [handles.hide_spks_scat_time] = hide_spks_time(handles.unit_pts, handles.edit_cl, val, handles.chan_disp2, handles.feature_time, handles.hide_spks_scat_time, handles.ts, handles.Time_Scatter);
 end
@@ -724,6 +784,10 @@ end
 
 if length(find(handles.edit_cl)) > 1
     error('Cannot change colors of multiple clusters at once')
+end
+
+if isempty(find(handles.edit_cl))
+    error('No cluster selected.')
 end
 
 set_cl = find(handles.edit_cl);
@@ -1545,3 +1609,14 @@ function J_Clust_fig_KeyPressFcn(J_Clust_obj, eventdata, handles)
 %	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
 % handles    structure with handles and user data (see GUIDATA)
 % --- Executes on key press with focus on J_Clust_fig or any of its controls.
+
+
+% --- Executes during object deletion, before destroying properties.
+function J_Clust_fig_DeleteFcn(hObject, eventdata, handles)
+% hObject    handle to J_Clust_fig (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global cur_coeff_pcs
+global cur_coeff_pcs_c
+clear global cur_coeff_pcs
+clear global cur_coeff_pcs_c

@@ -27,10 +27,15 @@ concat_waveforms = reshape(permute(waveforms,[2,1,3]), [4 * num_samples, num_spk
 
 %% Peak Amps & related features
 peak_indx = floor(1/3 * num_samples - 1) + 1; %pre_peak samples + 1
-peak_amps_vec = max(waveforms_2d(:,1:peak_indx),[],2);
+peak_amps_vec = waveforms_2d(:,peak_indx);
 peak_amps = reshape(peak_amps_vec,4,num_spks);
 
-trough_vec = min(waveforms_2d(:,peak_indx:end),[],2);
+trough_vec = zeros(num_spks*4,1);
+pos_trough_indxs = find(peak_amps_vec < 0);
+neg_trough_indxs = find(peak_amps_vec > 0);
+trough_vec(pos_trough_indxs) = max(waveforms_2d(pos_trough_indxs,peak_indx:end),[],2);
+trough_vec(neg_trough_indxs) = min(waveforms_2d(neg_trough_indxs,peak_indx:end), [], 2);
+
 crest_trough_vec = peak_amps_vec - trough_vec;
 crest_trough = reshape(crest_trough_vec,4,num_spks);
 
@@ -41,11 +46,10 @@ energy = reshape(energy_vec,4,num_spks);
 
 power = energy ./ 32;
 
-% optional: uncomment to find best channels (i.e. closest i.e. channels sorted by greatest power)
+% optional: uncomment to find best channels (i.e. closest channels, i.e. channels sorted by greatest power)
 % [~, best_chs] = sort(mean(power,2),'descend');
 %% PCA
-warning 'off'
-%PC scores for entire dataset, channel by channel 
+%PC scores for entire dataset, channel by channel
 
 pc_coeffs = zeros(4, num_samples, num_samples);
 pc_scores = zeros(4, num_spks, num_samples);
@@ -53,28 +57,40 @@ pc_variance = zeros(num_samples, 4);
 pc_var_retained = zeros(num_samples, 4);
 pc_mus = zeros(4, num_samples);
 
-parfor i = 1:4
-    [pc_coeffs(i,:,:), pc_scores(i,:,:), pc_variance(:,i), ~, pc_var_retained(:,i), pc_mus(i,:)] = pca2(squeeze(waveforms(i,:,:))');
+if num_spks < num_samples
+    warning('You have too few spikes to run PCA. The rest of the features will still be calculated.')
+else
+    parfor i = 1:4
+        [pc_coeffs(i,:,:), pc_scores(i,:,:), pc_variance(:,i), ~, pc_var_retained(:,i), pc_mus(i,:)] = pca2(squeeze(waveforms(i,:,:))');
+    end
 end
 
 %PC Scores for concatenated waveforms
 
-[pc_coeffs_c, pc_scores_c, pc_variance_c, ~, pc_var_retained_c, pc_mus_c] = pca2(concat_waveforms');
+pc_coeffs_c = zeros(4*num_samples, 4*num_samples);
+pc_scores_c = zeros(num_spks, 4*num_samples);
+pc_variance_c = zeros(4*num_samples, 1);
+pc_var_retained_c = zeros(4*num_samples, 1);
+pc_mus_c = zeros(1, 4*num_samples);
 
-warning 'on'
-%% Wavelet coeffs (daub8)
+if num_spks < (num_samples*4) 
+    warning('You have too few spikes to run PCA for concatenated waveforms. The rest of the features will still be calculated.')
+else
+    [pc_coeffs_c, pc_scores_c, pc_variance_c, ~, pc_var_retained_c, pc_mus_c] = pca2(concat_waveforms');
+end
 
-% [db4_best_cs, db4_wvlet_cs, db4_wvlets_cs_f, db4_cA, db4_cD] = MyDWT1(waveforms,num_spks,4,2,'db4');
-% 
-% %db4 best coeff for entire dataset
-% db4_2_coeffs = vertcat(squeeze(db4_wvlets_cs_f(1,db4_best_cs(1,1),:))', squeeze(db4_wvlets_cs_f(2,db4_best_cs(2,1),:))',...
-%     squeeze(db4_wvlets_cs_f(3,db4_best_cs(3,1),:))', squeeze(db4_wvlets_cs_f(4,db4_best_cs(4,1),:))');
-% 
-% %db4 3 best coeffs for each channel
-% db4_2_ch_coeffs = cell(4,1);
-% for i = 1:4
-%     db4_2_ch_coeffs{i} = squeeze(db4_wvlets_cs_f(i,db4_best_cs(i,:),:));
-% end
+%% Wavelet coeffs 
+
+%For entire dataset, channel by channel (haar, daub8)
+
+parfor i = 1:4
+  daub8_wavelets = MyDWT(squeeze(waveforms(i,:,:))');
+  daub8_wavelets_ch(i,:,:) = daub8_wavelets;
+end
+
+% Wavelet coeffs for concatenated waveforms (haar, daub8)
+
+daub8_wavelets_c = MyDWT(concat_waveforms');
 
 %% Width
 
@@ -98,10 +114,10 @@ width_ms = reshape(width_ms_vec,4,num_spks);
 
 features{1,1} = peak_amps; features{2,1} = crest_trough; features{3,1} = power; 
 features{4,1} = pc_scores; features{5,1} = pc_scores_c;
-%features{6,1} = db_coeffs; features{7,1} = db_coeffs_c;
+features{6,1} = daub8_wavelets_ch; features{7,1} = daub8_wavelets_c;
 features{8,1} = width_ms;
-features{9,1} = pc_coeffs; features{10,1} = pc_var_retained;
-features{11,1} = pc_coeffs_c; features{12,1} = pc_var_retained_c;
+features{9,1} = -pc_coeffs; features{10,1} = pc_var_retained;
+features{11,1} = -pc_coeffs_c; features{12,1} = pc_var_retained_c;
 
 features{1,2} = 'Peak_Amplitudes'; features{2,2} = 'Peak_to_Peak_Amplitudes';
 features{3,2} = 'Power'; features{4,2} = 'PC_Scores';

@@ -46,7 +46,13 @@ if handles.output_features
             if features_vector_out(j)
                 cur_feature = handles.features{j,1};
                 cur_feature_name = handles.features{j,2};
-                unit_feature = cur_feature(handles.unit_pts{i});
+                if strcmp(cur_feature_name, 'PC_Scores')
+                    unit_feature = cur_feature(:,handles.unit_pts{i},:);
+                elseif strcmp(cur_feature_name, 'Concatenated_PC_Scores')
+                    unit_feature = cur_feature(handles.unit_pts{i},:);
+                else
+                    unit_feature = cur_feature(:,handles.unit_pts{i});
+                end
                 field = ['unit', num2str(i)];
                 output_struct.(field).(cur_feature_name) = unit_feature;
             end

@@ -16,20 +16,6 @@ if ~sum(edit_cl(:))
     error('No cluster selected')
 end
 
-%found_unit = []; %where first column of cell will be unit, and 2nd column will be points from unit to remove
-
-%remove points from selected unit(s)
-% for i = 1:length(unit_pts)
-%     [found_pts, remove_pts, ~] = intersect(unit_pts{i}, selected_pts);
-%     if ~isempty(found_pts)
-%         unit_pts_to_remove = unit_pts{i};
-%         unit_pts_to_remove(remove_pts) = [];
-%         unit_pts{i} = unit_pts_to_remove;
-%         %found_unit{i,1} = i;
-%         %found_unit{i,2} = remove_pts;
-%     end
-% end
-
 units_to_add_to = find(edit_cl);
 
 if max(units_to_add_to) > 12
@@ -38,12 +24,18 @@ end
 
 %add points to selected unit(s)
 for i = 1:length(units_to_add_to)
-    if units_to_add_to(i) > length(unit_pts)
-        unit_pts{units_to_add_to(i)} = 0;
+    if units_to_add_to(i) > length(unit_pts) %if we're creating a new unit that doesn't exist yet
+        unit_pts{units_to_add_to(i)} = 0; %0 serves as filler value
     end
     added_unit = unit_pts{units_to_add_to(i)};
-    added_unit = [added_unit', selected_pts];
-    added_unit(added_unit == 0) = [];
+    if ~isrow(added_unit)
+        added_unit = added_unit';
+    end
+    if ~isrow(selected_pts)
+        selected_pts = selected_pts';
+    end
+    added_unit = unique([added_unit, selected_pts]);
+    added_unit(added_unit == 0) = []; %remove 0 filler value
     unit_pts{units_to_add_to(i)} = added_unit;
 end
 

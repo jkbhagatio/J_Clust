@@ -25,7 +25,7 @@ data_fieldnames = fieldnames(user_data);
  
 %User system info input
 user_sys_info_title = 'Recording System Info';
-user_sys_info_prompt = {'Enter Sampling Rate (in Hz)', '(Optional) Enter Voltage Range (V)):','(Optional) Enter Number of Bits:', '(Optional) Enter gain (amplification):'};
+user_sys_info_prompt = {'Enter Sampling Rate (in Hz)', '(Optional) Enter Voltage Range (V)):','(Optional) Enter Number of Bits in ADC:', '(Optional) Enter gain (amplification):'};
 user_sys_info = inputdlg(user_sys_info_prompt, user_sys_info_title, [1 50]);
 Fs = str2num(user_sys_info{1}); 
 if isempty(user_sys_info{2}) || isempty(user_sys_info{3}) || isempty(user_sys_info{4})
@@ -42,11 +42,14 @@ switch load_data_contents{load_data_val}
         raw_sig = user_data.(data_fieldnames{1});
         disp('Filtering Signal...')
         filt_sig = filter_tetrode(raw_sig, Fs);
+        filt_sig = filt_sig * uV_conversion;
         var_outs{1} = filt_sig;  
         disp('Done')
     case 'Filtered Signal'
         filt_sig = user_data.(data_fieldnames(1));
+        filt_sig = filt_sig * uV_conversion;
         var_outs{1} = filt_sig;
+        disp('Filtered Signal loaded.')
     case 'Spike Waveforms'
         waveforms = user_data.(data_fieldnames{1});
         if size(waveforms,1) == 4
@@ -64,4 +67,5 @@ switch load_data_contents{load_data_val}
         overlaps1 = find(diff(ts * 1000) < 1.5); %spks less than 1.5 ms apart,
         overlaps2 = unique([overlaps1; overlaps1 + 1]);  %merge to count both 1st and 2nd spks in an overlap, but remove duplicates
         var_outs{1} = waveforms; var_outs{2} = ts; var_outs{3} = num_spks; var_outs{4} = new_spk_mrkr; var_outs{5} = num_samples; var_outs{6} = overlaps2;
+        disp('Spike Waveforms loaded')
 end

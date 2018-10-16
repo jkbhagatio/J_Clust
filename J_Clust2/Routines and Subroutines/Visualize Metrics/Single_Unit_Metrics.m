@@ -98,8 +98,9 @@ uV_conversion = data_from_main.uV_conversion;
 
 if waveforms_select
     axes(handles.waveforms_ax)
-    handles.waveforms_plot = plot(concat_waveforms); %'Color', colors(handles.cl,:));
+    handles.waveforms_plot = plot(concat_waveforms); %'Color', handles.colors(handles.cl,:));
     hold on
+    handles.mean_waveforms_plot = plot(mean(concat_waveforms'), 'LineWidth', 5, 'Color', 'k')
     ch2_divide = plot(num_samples,([min(concat_waveforms(:)):4:max(concat_waveforms(:))]), 'k.');
     ch3_divide = plot(num_samples*2,([min(concat_waveforms(:)):4:max(concat_waveforms(:))]), 'k.');
     ch4_divide = plot(num_samples*3,([min(concat_waveforms(:)):4:max(concat_waveforms(:))]), 'k.');
@@ -111,7 +112,7 @@ else
 end
 
 if residuals_select
-    if handles.preload
+    if data_from_main.preload
         disp('Cannot display cluster residuals without continuous tetrode signal')
     else
         mean_concat_waveform = mean(concat_waveforms,2);

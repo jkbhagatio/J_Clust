@@ -22,7 +22,7 @@ if val
             all_pts = [1:length(feature)];
             unit_pts_all = [];
             for j = 1:length(unit_pts)
-                unit_pts_all = [unit_pts_all; unit_pts{j}];
+                unit_pts_all = [unit_pts_all, unit_pts{j}];
             end
             cur_cl_to_hide = all_pts;
             cur_cl_to_hide(unit_pts_all) = [];

@@ -124,13 +124,18 @@ warning 'on'
 
 guidata(edit_optics_obj, handles);
 
-% --- Executes on button press in delete_all_cl.
-function delete_all_cl_Callback(edit_optics_obj, eventdata, handles)
-% edit_optics_obj    handle to delete_all_cl (see GCBO)
+% --- Executes on button press in delete_cl.
+function delete_cl_Callback(edit_optics_obj, eventdata, handles)
+% edit_optics_obj    handle to delete_cl (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-del_cl = str2num(cell2mat(inputdlg('Enter cluster number you wish to delete in order of creation','Delete a cluster from RD Plot',[1 45])));
+del_cl = inputdlg('Enter cluster number you wish to delete in order of creation','Delete a cluster from RD Plot',[1 45]);
+if ~isempty(del_cl)
+    del_cl = str2num(cell2mat(del_cl));
+else
+    return;
+end
 handles.new_unit_pts{del_cl} = [];
 handles.new_unit_pts = handles.new_unit_pts(~cellfun('isempty', handles.new_unit_pts));
 field = ['unit', num2str(del_cl)];
@@ -172,22 +177,24 @@ xlabel(num2str(data_from_main.chan_disp1(1)))
 ylabel(num2str(data_from_main.chan_disp1(2)))
 title(data_from_main.feat_disp1)
 
-no_time_disp = 0;
-if strcmp(data_from_main.feat_disp2, 'X vs. Y') || strcmp(data_from_main.feat_disp2, 'View All Waveforms')
-    no_time_disp = 1;
-end
-if ~no_time_disp
-    axes(data_from_main.Time_Scatter)
-    scatter(data_from_main.ts, data_from_main.feature_time(data_from_main.chan_disp2, :), '.')
-    hold on
-    for i = 1:length(handles.new_unit_pts)
-        scatter(data_from_main.ts(handles.new_unit_pts{i}), data_from_main.feature_time(data_from_main.chan_disp2, handles.new_unit_pts{i}), 'Marker', '.', 'MarkerEdgeColor', handles.colors(i,:));
-    end
-    hold off
-end
+%Commented out below to currently only display OPTICS selections on channel_scatter
 
-xlabel(num2str(data_from_main.chan_disp1(1)))
-title(data_from_main.feat_disp2)
+% no_time_disp = 0;
+% if strcmp(data_from_main.feat_disp2, 'X vs. Y') || strcmp(data_from_main.feat_disp2, 'View All Waveforms')
+%     no_time_disp = 1;
+% end
+% if ~no_time_disp
+%     axes(data_from_main.Time_Scatter)
+%     scatter(data_from_main.ts, data_from_main.feature_time(data_from_main.chan_disp2, :), '.')
+%     hold on
+%     for i = 1:length(handles.new_unit_pts)
+%         scatter(data_from_main.ts(handles.new_unit_pts{i}), data_from_main.feature_time(data_from_main.chan_disp2, handles.new_unit_pts{i}), 'Marker', '.', 'MarkerEdgeColor', handles.colors(i,:));
+%     end
+%     hold off
+% end
+% 
+% xlabel(num2str(data_from_main.chan_disp1(1)))
+% title(data_from_main.feat_disp2)
 
 guidata(edit_optics_obj, handles);
 
